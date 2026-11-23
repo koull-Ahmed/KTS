@@ -1,0 +1,117 @@
+import { useState } from "react";
+import { BanknoteIcon, Package2Icon, PlusCircleIcon } from "lucide-react";
+import { useProductStore } from "../store/useProductStore";
+import ProductImageInput from "./ProductImageInput";
+
+function AddProductModal() {
+  const { addProduct, formData, setFormData, adding } = useProductStore();
+  const [readingImage, setReadingImage] = useState(false);
+
+  return (  
+    <dialog id="add_product_modal" className="modal">
+      <div className="modal-box">
+        {/* CLOSE BUTTON */}
+        <button
+          type="button"
+          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          onClick={() => document.getElementById("add_product_modal").close()}
+          aria-label="Close dialog"
+        >
+          X
+        </button>
+
+        {/* MODAL HEADER */}
+        <h3 className="font-bold text-xl mb-8">Add New Product</h3>
+
+        <form onSubmit={addProduct} className="space-y-6">
+          <div className="grid gap-6">
+            {/* PRODUCT NAME INPUT */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-base font-medium">Product Name</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
+                  <Package2Icon className="size-5" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Enter product name"
+                  className="input input-bordered w-full pl-10 py-3 focus:input-primary transition-colors duration-200"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* PRODUCT PRICE INPUT */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-base font-medium">Price (DA)</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
+                  <BanknoteIcon className="size-5" />
+                </div>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="45000"
+                  className="input input-bordered w-full pl-10 py-3 focus:input-primary transition-colors duration-200"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* PRODUCT IMAGE */}
+            <ProductImageInput
+              value={formData.image}
+              onChange={(image) => setFormData((current) => ({ ...current, image }))}
+              onReadingChange={setReadingImage}
+            />
+          </div>
+
+          {/* MODAL ACTIONS */}
+          <div className="modal-action">
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => document.getElementById("add_product_modal").close()}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary min-w-[120px]"
+              disabled={
+                !formData.name.trim() ||
+                !formData.price ||
+                !formData.image ||
+                adding ||
+                readingImage
+              }
+            >
+            {adding ? (
+                <span className="loading loading-spinner loading-sm" />
+              ) : (
+                <>
+                  <PlusCircleIcon className="size-5 mr-2" />
+                  Add Product
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* BACKDROP */}
+      <form method="dialog" className="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+  );
+}
+
+export default AddProductModal;

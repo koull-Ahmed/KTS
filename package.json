@@ -1,0 +1,31 @@
+{
+  "name": "pern_stack_ecommerce",
+  "version": "1.0.0",
+  "description": "",
+  "main": "backend/server.js",
+  "scripts": {
+    "dev": "node --watch backend/server.js",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "start": "node backend/server.js",
+    "seed": "node backend/seeds/product.js",
+    "test": "node --test backend/lib/productValidation.test.js",
+    "lint": "npm run lint --prefix frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "dependencies": {
+    "@arcjet/node": "^1.15.0",
+    "@neondatabase/serverless": "^1.2.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "morgan": "^1.12.1"
+  }
+}
