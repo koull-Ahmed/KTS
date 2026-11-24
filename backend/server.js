@@ -3,7 +3,6 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
 
 import productRoutes from "./routes/productRoutes.js";
 import { sql } from "./config/db.js";
@@ -13,25 +12,26 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const __dirname = path.resolve();
 
 app.use(express.json({ limit: "6mb" }));
+app.use(express.urlencoded({ extended: true, limit: "6mb" }));
 app.use(cors());
 app.use(
   helmet({
     contentSecurityPolicy: false,
   })
-); // helmet is a security middleware that helps you protect your app by setting various HTTP headers
-app.use(morgan("dev")); // log the requests
+);
+app.use(morgan("dev"));
+
 app.get("/health", (_req, res) => {
   res.status(200).json({ success: true, status: "ok" });
 });
 
-// apply arcjet rate-limit to all routes
+// Apply Arcjet rate-limit and bot protection to all routes
 app.use(async (req, res, next) => {
   try {
     const decision = await aj.protect(req, {
-      requested: 1, // specifies that each request consumes 1 token
+      requested: 1,
     });
 
     if (decision.isDenied()) {
@@ -44,7 +44,6 @@ app.use(async (req, res, next) => {
       }
     }
 
-    // check for spoofed bots
     if (decision.results.some((result) => result.reason.isBot() && result.reason.isSpoofed())) {
       return res.status(403).json({ success: false, message: "Spoofed bot detected." });
     }
@@ -56,14 +55,7 @@ app.use(async (req, res, next) => {
 });
 
 app.use("/api/products", productRoutes);
-if (process.env.NODE_ENV === "production") {
-  // serve our react app
-  app.use(express.static(path.join(__dirname, "/frontend/dist")));
 
-  app.get("/{*splat}", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
-  });
-}
 async function initDB() {
   try {
     await sql`
@@ -77,6 +69,7 @@ async function initDB() {
     `;
 
     await sql`ALTER TABLE products ALTER COLUMN image TYPE TEXT`;
+    console.log("Database initialized successfully");
   } catch (error) {
     throw new Error("Database initialization failed.", { cause: error });
   }
@@ -93,13 +86,14 @@ app.use((error, _req, res, next) => {
   });
 });
 
-initDB()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
+initDB().catch((error) => {
+  console.error("Database initialization failed:", error);
+});
+
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
   });
+}
+
+export default app;
