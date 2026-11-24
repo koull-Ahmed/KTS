@@ -6,7 +6,7 @@ const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").repla
   /\/$/,
   "",
 );
-const REQUEST_TIMEOUT_MS = 12000;
+const REQUEST_TIMEOUT_MS = 30000;
 
 function getErrorMessage(error) {
   if (error.response?.status === 429) {
